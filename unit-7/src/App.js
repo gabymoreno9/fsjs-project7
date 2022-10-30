@@ -1,24 +1,67 @@
-import logo from './logo.svg';
-import './index.css';
-import SearchBox from './SearchBox'
+import {useState, useEffect} from 'react'
+import {useNavigate, useParams} from "react-router-dom"
+import logo from './logo.svg'
+import './index.css'
 import Nav from './Nav'
-import Photo from './Photo'
-import NotFound from './NotFound'
+import SearchBox from './SearchBox'
+import PhotoGrid from './PhotoGrid'
+import apikey from './config.js'
+
+const navTopics = {
+  'cats': 'Cats',
+  'dogs': 'Dogs',
+  'computers': 'Computers',
+}
+
+function loadSearchResults(tag) {
+  let url = `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=${apikey}&tags=${tag}&format=json&nojsoncallback=1`
+
+  // this fetch returns a promise with the response code 
+  // then we get a new promise with the json data
+  // then we get a third promise with the actual array of photos
+  return fetch(url)
+    .then(response => response.json())
+    .then(data => data.photos.photo)
+}
 
 function App() {
+  let [searchResults, setSearchResults] = useState({})
+  let navigate = useNavigate()
+  let params = useParams()
+
+  function search(topic) {
+    // If we already have search results for this topic, we don't search again
+    if (!searchResults[topic]) {
+      loadSearchResults(topic).then(data => {
+        setSearchResults(currentResults =>
+          ({...currentResults, [topic]: data}))
+      })
+    }
+  }
+
+  // When the page first loads, fetch the photos for the three nav topics
+  useEffect(() => {
+    for(let topic in navTopics) {
+      search(topic)
+    }
+    if (params.topic) {
+      search(params.topic)
+    }
+  }, [])
+
+  // Load the photos for whatever the user types in the search bar
+  function handleSearch(topic) {
+    navigate(`/topics/${topic}`)
+    search(topic)
+  }
+
   return (
     <div className="container">
-      <SearchBox />
-      <Nav />
-      <div class="photo-container">
+      <SearchBox onSubmit={handleSearch} />
+      <Nav topics={navTopics} />
+      <div className="photo-container">
         <h2>Results</h2>
-        <ul>
-          <Photo url="https://farm5.staticflickr.com/4334/37032996241_4c16a9b530.jpg" />
-          <Photo url="https://farm5.staticflickr.com/4342/36338751244_316b6ee54b.jpg" />
-          <Photo url="https://farm5.staticflickr.com/4343/37175099045_0d3a249629.jpg" />
-          <Photo url="https://farm5.staticflickr.com/4425/36337012384_ba3365621e.jpg" />
-          <NotFound />
-        </ul>
+        <PhotoGrid photos={searchResults[params.topic]} />
       </div>
     </div>
   );

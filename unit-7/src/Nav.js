@@ -1,12 +1,17 @@
 import React from 'react'
+import { Link } from "react-router-dom"
 
-function Nav() {
+function Nav(props) {
   return (
-    <nav class="main-nav">
+    <nav className="main-nav">
       <ul>
-        <li><a href='#'>Cats</a></li>
-        <li><a href='#'>Dogs</a></li>
-        <li><a href='#'>Computers</a></li>
+        {Object.keys(props.topics).map(topic =>
+          <li key={topic}>
+            <Link to={`/topics/${topic}`}>
+              {props.topics[topic]}
+            </Link>
+          </li>
+        )}
       </ul>
     </nav>
   )
