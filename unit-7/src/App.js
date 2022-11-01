@@ -1,6 +1,5 @@
 import {useState, useEffect} from 'react'
 import {useNavigate, useParams} from "react-router-dom"
-import logo from './logo.svg'
 import './index.css'
 import Nav from './Nav'
 import SearchBox from './SearchBox'
